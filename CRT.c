@@ -228,10 +228,10 @@ int CRT_colorSchemes[LAST_COLORSCHEME][LAST_COLORELEMENT] = {
       [CPU_NORMAL] = ColorPair(Green,Black),
       [CPU_KERNEL] = ColorPair(Red,Black),
       [CPU_IOWAIT] = A_BOLD | ColorPair(Black, Black),
-      [CPU_IRQ] = ColorPair(Yellow,Black),
+      [CPU_IRQ] = A_BOLD | ColorPair(Magenta,Black),
       [CPU_SOFTIRQ] = ColorPair(Magenta,Black),
-      [CPU_STEAL] = ColorPair(Cyan,Black),
-      [CPU_GUEST] = ColorPair(Cyan,Black),
+      [CPU_STEAL] = ColorPair(Yellow,Black),
+      [CPU_GUEST] = A_BOLD | ColorPair(Yellow,Black),
    },
    [COLORSCHEME_MONOCHROME] = {
       [RESET_COLOR] = A_NORMAL,
