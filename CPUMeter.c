@@ -85,48 +85,50 @@ static void CPUMeter_display(const Object* cast, RichString* out) {
       RichString_append(out, CRT_colors[METER_TEXT], "absent");
       return;
    }
-   xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_NORMAL]);
-   RichString_append(out, CRT_colors[METER_TEXT], ":");
+   xSnprintf(buffer, sizeof(buffer), "%2.0f%% ", this->values[CPU_METER_NORMAL]);
+   RichString_append(out, CRT_colors[METER_TEXT], "um:");
    RichString_append(out, CRT_colors[CPU_NORMAL], buffer);
+   #define NAN_TO_ZERO(val) (isnan(val) ? 0.0f : (val))
    if (this->pl->settings->detailedCPUTime) {
-      xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_KERNEL]);
-      RichString_append(out, CRT_colors[METER_TEXT], "sy:");
+      xSnprintf(buffer, sizeof(buffer), "%2.0f%% ", this->values[CPU_METER_KERNEL]);
+      RichString_append(out, CRT_colors[METER_TEXT], "km:");
       RichString_append(out, CRT_colors[CPU_SYSTEM], buffer);
-      xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_NICE]);
+      xSnprintf(buffer, sizeof(buffer), "%2.0f%% ", this->values[CPU_METER_NICE]);
       RichString_append(out, CRT_colors[METER_TEXT], "ni:");
       RichString_append(out, CRT_colors[CPU_NICE_TEXT], buffer);
-      xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_IRQ]);
-      RichString_append(out, CRT_colors[METER_TEXT], "hi:");
+      xSnprintf(buffer, sizeof(buffer), "%2.0f%% ", this->values[CPU_METER_IRQ]);
+      RichString_append(out, CRT_colors[METER_TEXT], "ih:");
       RichString_append(out, CRT_colors[CPU_IRQ], buffer);
-      xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_SOFTIRQ]);
-      RichString_append(out, CRT_colors[METER_TEXT], "si:");
+      xSnprintf(buffer, sizeof(buffer), "%2.0f%% ", this->values[CPU_METER_SOFTIRQ]);
+      RichString_append(out, CRT_colors[METER_TEXT], "is:");
       RichString_append(out, CRT_colors[CPU_SOFTIRQ], buffer);
-      if (!isnan(this->values[CPU_METER_STEAL])) {
-         xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_STEAL]);
+      if (true || !isnan(this->values[CPU_METER_STEAL])) {
+         xSnprintf(buffer, sizeof(buffer), "%2.0f%% ", NAN_TO_ZERO(this->values[CPU_METER_STEAL]));
          RichString_append(out, CRT_colors[METER_TEXT], "st:");
          RichString_append(out, CRT_colors[CPU_STEAL], buffer);
       }
-      if (!isnan(this->values[CPU_METER_GUEST])) {
-         xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_GUEST]);
-         RichString_append(out, CRT_colors[METER_TEXT], "gu:");
+      if (true || !isnan(this->values[CPU_METER_GUEST])) {
+         xSnprintf(buffer, sizeof(buffer), "%2.0f%% ", NAN_TO_ZERO(this->values[CPU_METER_GUEST]));
+         RichString_append(out, CRT_colors[METER_TEXT], "vm:");
          RichString_append(out, CRT_colors[CPU_GUEST], buffer);
       }
-      xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_IOWAIT]);
-      RichString_append(out, CRT_colors[METER_TEXT], "wa:");
+      xSnprintf(buffer, sizeof(buffer), "%2.0f%% ", this->values[CPU_METER_IOWAIT]);
+      RichString_append(out, CRT_colors[METER_TEXT], "io:");
       RichString_append(out, CRT_colors[CPU_IOWAIT], buffer);
    } else {
-      xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_KERNEL]);
+      xSnprintf(buffer, sizeof(buffer), "%2.0f%% ", this->values[CPU_METER_KERNEL]);
       RichString_append(out, CRT_colors[METER_TEXT], "sys:");
       RichString_append(out, CRT_colors[CPU_SYSTEM], buffer);
-      xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_NICE]);
+      xSnprintf(buffer, sizeof(buffer), "%2.0f%% ", this->values[CPU_METER_NICE]);
       RichString_append(out, CRT_colors[METER_TEXT], "low:");
       RichString_append(out, CRT_colors[CPU_NICE_TEXT], buffer);
-      if (!isnan(this->values[CPU_METER_IRQ])) {
-         xSnprintf(buffer, sizeof(buffer), "%5.1f%% ", this->values[CPU_METER_IRQ]);
+      if (true || !isnan(this->values[CPU_METER_IRQ])) {
+         xSnprintf(buffer, sizeof(buffer), "%2.0f%% ", NAN_TO_ZERO(this->values[CPU_METER_IRQ]));
          RichString_append(out, CRT_colors[METER_TEXT], "vir:");
          RichString_append(out, CRT_colors[CPU_GUEST], buffer);
       }
    }
+   #undef NAN_TO_ZERO
 }
 
 static void AllCPUsMeter_getRange(Meter* this, int* start, int* count) {
