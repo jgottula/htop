@@ -191,6 +191,16 @@ double Platform_setCPUValues(Meter* this, int cpu) {
       percent = v[0]+v[1]+v[2]+v[3];
    }
    percent = CLAMP(percent, 0.0, 100.0);
+   /*if (percent > 200.0) {
+      fprintf(stderr, "cpu #%d:\r\n", cpu);
+      for (int i = 0; i < 8; ++i) {
+         fprintf(stderr, "%f\r\n", v[i]);
+      }
+      fprintf(stderr, "total: %f\r\n", total);
+      fprintf(stderr, "user:  %016llx\r\n", cpuData->userPeriod);
+      exit(1);
+   }
+   percent = MIN(100.0, MAX(0.0, percent));*/
    if (isnan(percent)) percent = 0.0;
    return percent;
 }

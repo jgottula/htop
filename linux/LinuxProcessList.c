@@ -989,16 +989,43 @@ static inline double LinuxProcessList_scanCPUTime(LinuxProcessList* this) {
          sscanf(buffer, "cpu%4d %16llu %16llu %16llu %16llu %16llu %16llu %16llu %16llu %16llu %16llu", &cpuid, &usertime, &nicetime, &systemtime, &idletime, &ioWait, &irq, &softIrq, &steal, &guest, &guestnice);
          assert(cpuid == i - 1);
       }
+      /*FILE* dbg = fopen("/tmp/htop.txt", "a");
+      fprintf(dbg, "cpu #%d\r\n", i);
+      fprintf(dbg, "raw:\r\n"
+         " user %16llu\r\n"
+         " nice %16llu\r\n"
+         " sys  %16llu\r\n"
+         " idle %16llu\r\n"
+         " iowa %16llu\r\n"
+         " irq  %16llu\r\n"
+         " sirq %16llu\r\n"
+         " stea %16llu\r\n"
+         " gues %16llu\r\n"
+         " gnic %16llu\r\n",
+         usertime, nicetime, systemtime, idletime,
+         ioWait, irq, softIrq, steal, guest, guestnice);*/
       // Guest time is already accounted in usertime
       usertime = usertime - guest;
       nicetime = nicetime - guestnice;
+      /*fprintf(dbg, "adjusted:\r\n"
+         "usertime %16llu\r\n"
+         "nicetime %16llu\r\n",
+         usertime, nicetime);*/
       // Fields existing on kernels >= 2.6
       // (and RHEL's patched kernel 2.4...)
       unsigned long long int idlealltime = idletime + ioWait;
       unsigned long long int systemalltime = systemtime + irq + softIrq;
       unsigned long long int virtalltime = guest + guestnice;
       unsigned long long int totaltime = usertime + nicetime + systemalltime + idlealltime + steal + virtalltime;
+      /*fprintf(dbg, "grouped:\r\n"
+         " idlealltime   %16llu\r\n"
+         " systemalltime %16llu\r\n"
+         " virtualltime  %16llu\r\n"
+         " totaltime     %16llu\r\n",
+         idlealltime, systemalltime, virtalltime, totaltime);*/
       CPUData* cpuData = &(this->cpus[i]);
+      /*if (usertime < cpuData->userTime) usertime = cpuData->userTime;
+      if (nicetime < cpuData->niceTime) nicetime = cpuData->niceTime;*/
       // Since we do a subtraction (usertime - guest) and cputime64_to_clock_t()
       // used in /proc/stat rounds down numbers, it can lead to a case where the
       // integer overflow.
@@ -1016,6 +1043,7 @@ static inline double LinuxProcessList_scanCPUTime(LinuxProcessList* this) {
       cpuData->guestPeriod = WRAP_SUBTRACT(virtalltime, cpuData->guestTime);
       cpuData->totalPeriod = WRAP_SUBTRACT(totaltime, cpuData->totalTime);
       #undef WRAP_SUBTRACT
+
       cpuData->userTime = usertime;
       cpuData->niceTime = nicetime;
       cpuData->systemTime = systemtime;
@@ -1028,6 +1056,32 @@ static inline double LinuxProcessList_scanCPUTime(LinuxProcessList* this) {
       cpuData->stealTime = steal;
       cpuData->guestTime = virtalltime;
       cpuData->totalTime = totaltime;
+      /*fprintf(dbg, "times:\r\n"
+         " user %16llu\r\n"
+         " nice %16llu\r\n"
+         " sys  %16llu\r\n"
+         " sall %16llu\r\n"
+         " idle %16llu\r\n"
+         " iall %16llu\r\n"
+         " iowa %16llu\r\n"
+         " irq  %16llu\r\n"
+         " sirq %16llu\r\n"
+         " stea %16llu\r\n"
+         " gues %16llu\r\n"
+         " gnic %16llu\r\n",
+         cpuData->userTime,
+         cpuData->niceTime,
+         cpuData->systemTime,
+         cpuData->systemAllTime,
+         cpuData->idleAllTime,
+         cpuData->idleTime,
+         cpuData->ioWaitTime,
+         cpuData->irqTime,
+         cpuData->softIrqTime,
+         cpuData->stealTime,
+         cpuData->guestTime,
+         cpuData->totalTime);
+      fclose(dbg);*/
    }
    double period = (double)this->cpus[0].totalPeriod / cpus;
    fclose(file);
