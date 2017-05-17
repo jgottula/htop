@@ -669,6 +669,26 @@ static void LinuxProcessList_readDelayAcctData(LinuxProcessList* this, LinuxProc
 
 #endif
 
+static void LinuxProcessList_readVMSwapData(LinuxProcess* process, const char* dirname, const char* name) {
+   char filename[MAX_NAME+1];
+   snprintf(filename, MAX_NAME, "%s/%s/status", dirname, name);
+   FILE* file = fopen(filename, "r");
+   if (!file)
+      return;
+   char buffer[256];
+   process->vmswap = 0;
+   while (fgets(buffer, 255, file)) {
+      if (String_startsWith(buffer, "VmSwap:")) {
+         unsigned long vmswap;
+         int ok = sscanf(buffer, "VmSwap:\t%8lu kB", &vmswap);
+         if (ok >= 1) {
+            process->vmswap = vmswap;
+         }
+      }
+   }
+   fclose(file);
+}
+
 static void setCommand(Process* process, const char* command, int len) {
    if (process->comm && process->commLen >= len) {
       strncpy(process->comm, command, len + 1);
@@ -768,6 +788,9 @@ static bool LinuxProcessList_recurseProcTree(LinuxProcessList* this, const char*
    #ifdef HAVE_TASKSTATS
    unsigned long long now = tv.tv_sec*1000LL+tv.tv_usec/1000LL;
    #endif
+
+   static unsigned int counter = 0;
+   ++counter;
 
    dir = opendir(dirname);
    if (!dir) return false;
@@ -877,6 +900,9 @@ static bool LinuxProcessList_recurseProcTree(LinuxProcessList* this, const char*
       
       if (settings->flags & PROCESS_FLAG_LINUX_OOM)
          LinuxProcessList_readOomData(lp, dirname, name);
+
+      if ((settings->flags & PROCESS_FLAG_LINUX_VMSWAP) && ((counter % 5) == 0))
+         LinuxProcessList_readVMSwapData(lp, dirname, name);
 
       if (proc->state == 'Z' && (proc->basenameOffset == 0)) {
          proc->basenameOffset = -1;

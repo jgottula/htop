@@ -15,6 +15,7 @@ in the source distribution for its full text.
 #define PROCESS_FLAG_LINUX_VSERVER  0x0400
 #define PROCESS_FLAG_LINUX_CGROUP   0x0800
 #define PROCESS_FLAG_LINUX_OOM      0x1000
+#define PROCESS_FLAG_LINUX_VMSWAP   0x2000
 
 typedef enum UnsupportedProcessFields {
    FLAGS = 9,
@@ -78,7 +79,8 @@ typedef enum LinuxProcessFields {
    PERCENT_IO_DELAY = 117,
    PERCENT_SWAP_DELAY = 118,
    #endif
-   LAST_PROCESSFIELD = 119,
+   VMSWAP = 119,
+   LAST_PROCESSFIELD = 120,
 } LinuxProcessField;
 
 #include "IOPriority.h"
@@ -123,6 +125,7 @@ typedef struct LinuxProcess_ {
    char* cgroup;
    #endif
    unsigned int oom;
+   unsigned long vmswap;
    char* ttyDevice;
    #ifdef HAVE_DELAYACCT
    unsigned long long int delay_read_time;

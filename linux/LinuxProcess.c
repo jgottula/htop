@@ -24,6 +24,7 @@ in the source distribution for its full text.
 #define PROCESS_FLAG_LINUX_VSERVER  0x0400
 #define PROCESS_FLAG_LINUX_CGROUP   0x0800
 #define PROCESS_FLAG_LINUX_OOM      0x1000
+#define PROCESS_FLAG_LINUX_VMSWAP   0x2000
 
 typedef enum UnsupportedProcessFields {
    FLAGS = 9,
@@ -87,7 +88,8 @@ typedef enum LinuxProcessFields {
    PERCENT_IO_DELAY = 117,
    PERCENT_SWAP_DELAY = 118,
    #endif
-   LAST_PROCESSFIELD = 119,
+   VMSWAP = 119,
+   LAST_PROCESSFIELD = 120,
 } LinuxProcessField;
 
 #include "IOPriority.h"
@@ -132,6 +134,7 @@ typedef struct LinuxProcess_ {
    char* cgroup;
    #endif
    unsigned int oom;
+   unsigned long vmswap;
    char* ttyDevice;
    #ifdef HAVE_DELAYACCT
    unsigned long long int delay_read_time;
@@ -239,6 +242,7 @@ ProcessFieldData Process_fields[] = {
    [PERCENT_IO_DELAY] = { .name = "PERCENT_IO_DELAY", .title = "IOD% ", .description = "Block I/O delay %", .flags = 0, },
    [PERCENT_SWAP_DELAY] = { .name = "PERCENT_SWAP_DELAY", .title = "SWAPD% ", .description = "Swapin delay %", .flags = 0, },
 #endif
+   [VMSWAP] = { .name = "VMSWAP", .title = " SWAP ", .description = "Swapped-out virtual memory size by anonymous private pages (excludes shmem)", .flags = PROCESS_FLAG_LINUX_VMSWAP, },
    [LAST_PROCESSFIELD] = { .name = "*** report bug! ***", .title = NULL, .description = NULL, .flags = 0, },
 };
 
@@ -406,6 +410,7 @@ void LinuxProcess_writeField(Process* this, RichString* str, ProcessField field)
    case PERCENT_IO_DELAY: LinuxProcess_printDelay(lp->blkio_delay_percent, buffer, n); break;
    case PERCENT_SWAP_DELAY: LinuxProcess_printDelay(lp->swapin_delay_percent, buffer, n); break;
    #endif
+   case VMSWAP: Process_humanNumber(str, lp->vmswap, coloring); return;
    default:
       Process_writeField((Process*)this, str, field);
       return;
@@ -483,6 +488,8 @@ long LinuxProcess_compare(const void* v1, const void* v2) {
    #endif
    case IO_PRIORITY:
       return LinuxProcess_effectiveIOPriority(p1) - LinuxProcess_effectiveIOPriority(p2);
+   case VMSWAP:
+      return (p2->vmswap - p1->vmswap);
    default:
       return Process_compare(v1, v2);
    }
