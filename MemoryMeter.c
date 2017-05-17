@@ -52,6 +52,11 @@ static void MemoryMeter_display(Object* cast, RichString* out) {
    Meter_humanUnit(buffer, this->values[2], 50);
    RichString_append(out, CRT_colors[METER_TEXT], " cache:");
    RichString_append(out, CRT_colors[MEMORY_CACHE], buffer);
+
+   double freeMem = this->total - this->values[0] - this->values[1] - this->values[2];
+   Meter_humanUnit(buffer, freeMem, 50);
+   RichString_append(out, CRT_colors[METER_TEXT], " free:");
+   RichString_append(out, CRT_colors[MEMORY_FREE], buffer);
 }
 
 MeterClass MemoryMeter_class = {
