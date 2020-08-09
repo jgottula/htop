@@ -119,18 +119,10 @@ static HandlerResult MainPanel_eventHandler(Panel* super, int ch) {
       return BREAK_LOOP;
    }
    if (!(reaction & HTOP_KEEP_FOLLOWING)) {
-      this->state->pl->following = -1;
+      this->state->pl->following = 0;
       Panel_setSelectionColor(super, CRT_colors[PANEL_SELECTION_FOCUS]);
    }
    return result;
-}
-
-int MainPanel_selectedPid(MainPanel* this) {
-   Process* p = (Process*) Panel_getSelected((Panel*)this);
-   if (p) {
-      return p->pid;
-   }
-   return -1;
 }
 
 const char* MainPanel_getValue(MainPanel* this, int i) {

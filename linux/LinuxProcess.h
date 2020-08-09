@@ -100,6 +100,8 @@ typedef enum LinuxProcessFields {
 
 typedef struct LinuxProcess_ {
    Process super;
+   bool isMainThread;
+   bool isUserlandThread;
    bool isKernelThread;
    IOPriority ioPriority;
    unsigned long int cminflt;
@@ -157,9 +159,7 @@ typedef struct LinuxProcess_ {
 
 #define Process_isKernelThread(_process) (((const LinuxProcess*)(_process))->isKernelThread)
 
-static inline bool Process_isUserlandThread(const Process* this) {
-   return this->pid != this->tgid;
-}
+#define Process_isUserlandThread(_process) (((const LinuxProcess*)(_process))->isUserlandThread)
 
 extern long long btime;
 
@@ -185,6 +185,12 @@ void LinuxProcess_writeField(const Process* this, RichString* str, ProcessField 
 
 long LinuxProcess_compare(const void* v1, const void* v2);
 
-bool Process_isThread(const Process* this);
+inline bool Process_isThread(const Process* this) {
+   return (Process_isUserlandThread(this) || Process_isKernelThread(this));
+}
+
+inline bool Process_isMainThread(const Process* this) {
+   return ((const LinuxProcess*)this)->isMainThread;
+}
 
 #endif

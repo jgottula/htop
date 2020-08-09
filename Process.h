@@ -115,6 +115,7 @@ void Process_writeField(const Process* this, RichString* str, ProcessField field
 long Process_compare(const void* v1, const void* v2);
 void Process_delete(Object* cast);
 bool Process_isThread(const Process* this);
+bool Process_isMainThread(const Process* this);
 extern ProcessFieldData Process_fields[];
 extern ProcessPidColumn Process_pidColumns[];
 extern char Process_pidFormat[20];
@@ -130,15 +131,17 @@ typedef struct ProcessClass_ {
 #define As_Process(this_)              ((const ProcessClass*)((this_)->super.klass))
 
 static inline pid_t Process_getParentPid(const Process* this) {
-   return this->tgid == this->pid ? this->ppid : this->tgid;
+   return Process_isMainThread(this) ? this->pid : (this->tgid == this->pid ? this->ppid : this->tgid);
 }
 
 static inline bool Process_isChildOf(const Process* this, pid_t pid) {
-   return pid == Process_getParentPid(this);
+   return this->tgid == pid || (this->tgid == pid && this->ppid == pid && !Process_isMainThread(this));
 }
 
 #define Process_sortState(state) ((state) == 'I' ? 0x100 : (state))
 
+#define PID_KEY_(pid, isMainThread) (((unsigned int)((pid)) << 1) | ((isMainThread) ? 1U : 0U))
+#define PID_KEY(proc) (proc ? PID_KEY_((proc)->pid, Process_isMainThread((proc))) : 0)
 
 #define ONE_K 1024UL
 #define ONE_M (ONE_K * ONE_K)

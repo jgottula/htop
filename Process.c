@@ -302,7 +302,7 @@ void Process_writeField(const Process* this, RichString* str, ProcessField field
             buf += written;
             n -= written;
          }
-         const char* draw = CRT_treeStr[lastItem ? (this->settings->direction == 1 ? TREE_STR_BEND : TREE_STR_TEND) : TREE_STR_RTEE];
+         const char* draw = CRT_treeStr[lastItem ? TREE_STR_BEND : TREE_STR_RTEE];
          xSnprintf(buf, n, "%s%s ", draw, this->showChildren ? CRT_treeStr[TREE_STR_SHUT] : CRT_treeStr[TREE_STR_OPEN] );
          RichString_append(str, CRT_colors[PROCESS_TREE], buffer);
          Process_writeCommand(this, attr, baseattr, str);
@@ -438,6 +438,12 @@ bool Process_sendSignal(Process* this, Arg sgn) {
 long Process_pidCompare(const void* v1, const void* v2) {
    const Process* p1 = (const Process*)v1;
    const Process* p2 = (const Process*)v2;
+   if (p1->pid == p2->pid) {
+      // workaround for there potentially being TWO entries for the same PID:
+      // one for the entire process, and another for the main thread
+      // (we'd like the process entry to come first, then the thread entry)
+      return ((long)Process_isMainThread(p1) - (long)Process_isMainThread(p2));
+   }
    return (p1->pid - p2->pid);
 }
 
@@ -473,7 +479,7 @@ long Process_compare(const void* v1, const void* v2) {
    case PGRP:
       return (p1->pgrp - p2->pgrp);
    case PID:
-      return (p1->pid - p2->pid);
+      return Process_pidCompare(p1, p2);
    case PPID:
       return (p1->ppid - p2->ppid);
    case PRIORITY:
@@ -484,7 +490,7 @@ long Process_compare(const void* v1, const void* v2) {
       return (p1->session - p2->session);
    case STARTTIME: {
       if (p1->starttime_ctime == p2->starttime_ctime)
-         return (p1->pid - p2->pid);
+         return Process_pidCompare(p1, p2);
       else
          return (p1->starttime_ctime - p2->starttime_ctime);
    }
@@ -503,6 +509,6 @@ long Process_compare(const void* v1, const void* v2) {
    case USER:
       return strcmp(p1->user ? p1->user : "", p2->user ? p2->user : "");
    default:
-      return (p1->pid - p2->pid);
+      return Process_pidCompare(p1, p2);
    }
 }
