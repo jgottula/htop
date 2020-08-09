@@ -813,22 +813,27 @@ static bool LinuxProcessList_recurseProcTree(LinuxProcessList* this, const char*
 
       // filename is a number: process directory
       int pid = atoi(name);
-     
-      if (parent && pid == parent->pid)
-         continue;
 
       if (pid <= 0) 
          continue;
 
+      // parent == NULL if we are in /proc/PID/
+      // parent != NULL if we are in /proc/PID/task/TID/
+      // for processes: tgid == pid
+      // for threads:   tgid == parent->pid
+      pid_t tgid = parent ? parent->pid : pid;
+
+      bool isMainThread = (parent && pid == parent->pid);
+      bool isUserlandThread = isMainThread || (pid != tgid);
+
       bool preExisting = false;
-      Process* proc = ProcessList_getProcess(pl, pid, &preExisting, (Process_New) LinuxProcess_new);
-      proc->tgid = parent ? parent->pid : pid;
-      
+      Process* proc = ProcessList_getProcess(pl, pid, isMainThread, &preExisting, (Process_New) LinuxProcess_new);
+      proc->tgid = tgid;
+
       LinuxProcess* lp = (LinuxProcess*) proc;
 
-      char subdirname[MAX_NAME+1];
-      xSnprintf(subdirname, MAX_NAME, "%s/%s/task", dirname, name);
-      LinuxProcessList_recurseProcTree(this, subdirname, proc, period, tv);
+      lp->isMainThread = isMainThread;
+      lp->isUserlandThread = isUserlandThread;
 
       #ifdef HAVE_TASKSTATS
       if (settings->flags & PROCESS_FLAG_IO)
@@ -915,18 +920,22 @@ static bool LinuxProcessList_recurseProcTree(LinuxProcessList* this, const char*
             if (! LinuxProcessList_readCmdlineFile(proc, dirname, name))
                goto errorReadingProcess;
          }
-         if (Process_isKernelThread(proc)) {
-            pl->kernelThreads++;
-         } else {
-            pl->userlandThreads++;
+         if (!Process_isMainThread(proc)) {
+            if (Process_isKernelThread(proc)) {
+               pl->kernelThreads++;
+            } else {
+               pl->userlandThreads++;
+            }
          }
       }
 
-      pl->totalTasks++;
-      if (proc->state == 'R')
-         pl->runningTasks++;
+      if (!Process_isMainThread(proc)) {
+         pl->totalTasks++;
+         if (proc->state == 'R')
+            pl->runningTasks++;
+      }
       proc->updated = true;
-      continue;
+      goto finally;
 
       // Exception handler.
       errorReadingProcess: {
@@ -934,6 +943,15 @@ static bool LinuxProcessList_recurseProcTree(LinuxProcessList* this, const char*
             ProcessList_remove(pl, proc);
          } else {
             Process_delete((Object*)proc);
+         }
+      }
+
+      finally: {
+         // TODO: how do we deal with nlwp > 1 initially, but then decrementing to 1 or less?
+         if (!Process_isThread(proc) && proc->nlwp > 1) {
+            char subdirname[MAX_NAME+1];
+            xSnprintf(subdirname, MAX_NAME, "%s/%s/task", dirname, name);
+            LinuxProcessList_recurseProcTree(this, subdirname, proc, period, tv);
          }
       }
    }

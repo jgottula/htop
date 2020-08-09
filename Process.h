@@ -156,11 +156,14 @@ typedef struct ProcessClass_ {
 
 #define As_Process(this_)              ((ProcessClass*)((this_)->super.klass))
 
-#define Process_getParentPid(process_)    (process_->tgid == process_->pid ? process_->ppid : process_->tgid)
+#define Process_getParentPid(process_)    (Process_isMainThread(process_) ? process_->pid : (process_->tgid == process_->pid ? process_->ppid : process_->tgid))
 
-#define Process_isChildOf(process_, pid_) (process_->tgid == pid_ || (process_->tgid == process_->pid && process_->ppid == pid_))
+#define Process_isChildOf(process_, pid_) (process_->tgid == pid_ || (process_->tgid == process_->pid && process_->ppid == pid_ && !Process_isMainThread(process_)))
 
 #define Process_sortState(state) ((state) == 'I' ? 0x100 : (state))
+
+#define PID_KEY_(pid, isMainThread) (((unsigned int)((pid)) << 1) | ((isMainThread) ? 1U : 0U))
+#define PID_KEY(proc) (proc ? PID_KEY_((proc)->pid, Process_isMainThread((proc))) : 0)
 
 
 #define ONE_K 1024L

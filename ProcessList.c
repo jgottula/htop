@@ -43,7 +43,7 @@ typedef struct ProcessList_ {
    UsersTable* usersTable;
 
    Panel* panel;
-   int following;
+   unsigned int following;
    uid_t userId;
    const char* incFilter;
    Hashtable* pidWhiteList;
@@ -102,7 +102,7 @@ ProcessList* ProcessList_init(ProcessList* this, ObjectClass* klass, UsersTable*
    }
 #endif
 
-   this->following = -1;
+   this->following = 0;
 
    return this;
 }
@@ -137,26 +137,26 @@ void ProcessList_printHeader(ProcessList* this, RichString* header) {
 
 void ProcessList_add(ProcessList* this, Process* p) {
    assert(Vector_indexOf(this->processes, p, Process_pidCompare) == -1);
-   assert(Hashtable_get(this->processTable, p->pid) == NULL);
+   assert(Hashtable_get(this->processTable, PID_KEY(p)) == NULL);
    
    Vector_add(this->processes, p);
-   Hashtable_put(this->processTable, p->pid, p);
+   Hashtable_put(this->processTable, PID_KEY(p), p);
    
    assert(Vector_indexOf(this->processes, p, Process_pidCompare) != -1);
-   assert(Hashtable_get(this->processTable, p->pid) != NULL);
+   assert(Hashtable_get(this->processTable, PID_KEY(p)) != NULL);
    assert(Hashtable_count(this->processTable) == Vector_count(this->processes));
 }
 
 void ProcessList_remove(ProcessList* this, Process* p) {
    assert(Vector_indexOf(this->processes, p, Process_pidCompare) != -1);
-   assert(Hashtable_get(this->processTable, p->pid) != NULL);
-   Process* pp = Hashtable_remove(this->processTable, p->pid);
+   assert(Hashtable_get(this->processTable, PID_KEY(p)) != NULL);
+   Process* pp = Hashtable_remove(this->processTable, PID_KEY(p));
    assert(pp == p); (void)pp;
-   unsigned int pid = p->pid;
+   unsigned int key = PID_KEY(p);
    int idx = Vector_indexOf(this->processes, p, Process_pidCompare);
    assert(idx != -1);
    if (idx >= 0) Vector_remove(this->processes, idx);
-   assert(Hashtable_get(this->processTable, pid) == NULL); (void)pid;
+   assert(Hashtable_get(this->processTable, key) == NULL); (void)key;
    assert(Hashtable_count(this->processTable) == Vector_count(this->processes));
 }
 
@@ -168,14 +168,14 @@ int ProcessList_size(ProcessList* this) {
    return (Vector_size(this->processes));
 }
 
-static void ProcessList_buildTree(ProcessList* this, pid_t pid, int level, int indent, int direction, bool show) {
+static void ProcessList_buildTree(ProcessList* this, pid_t pid, int level, int indent, bool show) {
    Vector* children = Vector_new(Class(Process), false, DEFAULT_SIZE);
 
    for (int i = Vector_size(this->processes) - 1; i >= 0; i--) {
       Process* process = (Process*) (Vector_get(this->processes, i));
       if (process->show && Process_isChildOf(process, pid)) {
          process = (Process*) (Vector_take(this->processes, i));
-         Vector_add(children, process);
+         Vector_insert(children, 0, process);
       }
    }
    int size = Vector_size(children);
@@ -184,13 +184,10 @@ static void ProcessList_buildTree(ProcessList* this, pid_t pid, int level, int i
       if (!show)
          process->show = false;
       int s = this->processes2->items;
-      if (direction == 1)
-         Vector_add(this->processes2, process);
-      else
-         Vector_insert(this->processes2, 0, process);
+      Vector_add(this->processes2, process);
       assert(this->processes2->items == s+1); (void)s;
       int nextIndent = indent | (1 << level);
-      ProcessList_buildTree(this, process->pid, level+1, (i < size - 1) ? nextIndent : indent, direction, show ? process->showChildren : false);
+      ProcessList_buildTree(this, process->pid, level+1, (i < size - 1) ? nextIndent : indent, show ? process->showChildren : false);
       if (i == size - 1)
          process->indent = -nextIndent;
       else
@@ -225,8 +222,11 @@ void ProcessList_sort(ProcessList* this) {
                process = (Process*)(Vector_take(this->processes, i));
                process->indent = 0;
                Vector_add(this->processes2, process);
-               ProcessList_buildTree(this, process->pid, 0, 0, direction, false);
+               ProcessList_buildTree(this, process->pid, 0, 0, false);
                break;
+            }
+            if (Process_isMainThread(process)) {
+               continue;
             }
             pid_t ppid = Process_getParentPid(process);
             // Bisect the process vector to find parent
@@ -252,7 +252,7 @@ void ProcessList_sort(ProcessList* this) {
                process = (Process*)(Vector_take(this->processes, i));
                process->indent = 0;
                Vector_add(this->processes2, process);
-               ProcessList_buildTree(this, process->pid, 0, 0, direction, process->showChildren);
+               ProcessList_buildTree(this, process->pid, 0, 0, process->showChildren);
                break;
             }
          }
@@ -297,7 +297,7 @@ void ProcessList_rebuildPanel(ProcessList* this) {
    const char* incFilter = this->incFilter;
 
    int currPos = Panel_getSelectedIndex(this->panel);
-   pid_t currPid = this->following != -1 ? this->following : 0;
+   unsigned int currPid = this->following;
    int currScrollV = this->panel->scrollV;
 
    Panel_prune(this->panel);
@@ -315,7 +315,7 @@ void ProcessList_rebuildPanel(ProcessList* this) {
 
       if (!hidden) {
          Panel_set(this->panel, idx, (Object*)p);
-         if ((this->following == -1 && idx == currPos) || (this->following != -1 && p->pid == currPid)) {
+         if ((this->following == 0 && idx == currPos) || (this->following != 0 && PID_KEY(p) == currPid)) {
             Panel_setSelected(this->panel, idx);
             this->panel->scrollV = currScrollV;
          }
@@ -324,12 +324,13 @@ void ProcessList_rebuildPanel(ProcessList* this) {
    }
 }
 
-Process* ProcessList_getProcess(ProcessList* this, pid_t pid, bool* preExisting, Process_New constructor) {
-   Process* proc = (Process*) Hashtable_get(this->processTable, pid);
+Process* ProcessList_getProcess(ProcessList* this, pid_t pid, bool isMainThread, bool* preExisting, Process_New constructor) {
+   Process* proc = (Process*) Hashtable_get(this->processTable, PID_KEY_(pid, isMainThread));
    *preExisting = proc;
    if (proc) {
       assert(Vector_indexOf(this->processes, proc, Process_pidCompare) != -1);
       assert(proc->pid == pid);
+      assert(Process_isMainThread(proc) == isMainThread);
    } else {
       proc = constructor(this->settings);
       assert(proc->comm == NULL);

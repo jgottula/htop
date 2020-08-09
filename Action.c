@@ -75,21 +75,21 @@ Object* Action_pickFromVector(State* st, Panel* list, int x) {
    Panel* panelFocus;
    int ch;
    bool unfollow = false;
-   int pid = MainPanel_selectedPid((MainPanel*)panel);
-   if (header->pl->following == -1) {
-      header->pl->following = pid;
+   unsigned int kproc = PID_KEY((Process*)Panel_getSelected(panel));
+   if (header->pl->following == 0) {
+      header->pl->following = kproc;
       unfollow = true;
    }
    ScreenManager_run(scr, &panelFocus, &ch);
    if (unfollow) {
-      header->pl->following = -1;
+      header->pl->following = 0;
    }
    ScreenManager_delete(scr);
    Panel_move(panel, 0, y);
    Panel_resize(panel, COLS, LINES-y-1);
    if (panelFocus == list && ch == 13) {
       Process* selected = (Process*)Panel_getSelected(panel);
-      if (selected && selected->pid == pid)
+      if (selected && PID_KEY(selected) == kproc)
          return Panel_getSelected(list);
       else
          beep();
@@ -353,7 +353,7 @@ static Htop_Reaction actionFilterByUser(State* st) {
 }
 
 Htop_Reaction Action_follow(State* st) {
-   st->pl->following = MainPanel_selectedPid((MainPanel*)st->panel);
+   st->pl->following = PID_KEY((Process*)Panel_getSelected(st->panel));
    Panel_setSelectionColor(st->panel, CRT_colors[PANEL_SELECTION_FOLLOW]);
    return HTOP_KEEP_FOLLOWING;
 }

@@ -96,6 +96,8 @@ typedef enum LinuxProcessFields {
 
 typedef struct LinuxProcess_ {
    Process super;
+   bool isMainThread;
+   bool isUserlandThread;
    bool isKernelThread;
    IOPriority ioPriority;
    unsigned long int cminflt;
@@ -147,12 +149,16 @@ typedef struct LinuxProcess_ {
    #endif
 } LinuxProcess;
 
+#ifndef Process_isMainThread
+#define Process_isMainThread(_process) (((LinuxProcess*)(_process))->isMainThread)
+#endif
+
 #ifndef Process_isKernelThread
 #define Process_isKernelThread(_process) (((LinuxProcess*)(_process))->isKernelThread)
 #endif
 
 #ifndef Process_isUserlandThread
-#define Process_isUserlandThread(_process) (_process->pid != _process->tgid)
+#define Process_isUserlandThread(_process) (((LinuxProcess*)(_process))->isUserlandThread)
 #endif
 
 }*/
@@ -446,7 +452,7 @@ long LinuxProcess_compare(const void* v1, const void* v2) {
    case CSTIME: diff = p2->cstime - p1->cstime; goto test_diff;
    case STARTTIME: {
       if (p1->starttime == p2->starttime)
-         return (p1->super.pid - p2->super.pid);
+         return Process_pidCompare(&p1->super, &p2->super);
       else
          return (p1->starttime - p2->starttime);
    }

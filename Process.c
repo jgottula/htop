@@ -178,11 +178,14 @@ typedef struct ProcessClass_ {
 
 #define As_Process(this_)              ((ProcessClass*)((this_)->super.klass))
 
-#define Process_getParentPid(process_)    (process_->tgid == process_->pid ? process_->ppid : process_->tgid)
+#define Process_getParentPid(process_)    (Process_isMainThread(process_) ? process_->pid : (process_->tgid == process_->pid ? process_->ppid : process_->tgid))
 
-#define Process_isChildOf(process_, pid_) (process_->tgid == pid_ || (process_->tgid == process_->pid && process_->ppid == pid_))
+#define Process_isChildOf(process_, pid_) (process_->tgid == pid_ || (process_->tgid == process_->pid && process_->ppid == pid_ && !Process_isMainThread(process_)))
 
 #define Process_sortState(state) ((state) == 'I' ? 0x100 : (state))
+
+#define PID_KEY_(pid, isMainThread) (((unsigned int)((pid)) << 1) | ((isMainThread) ? 1U : 0U))
+#define PID_KEY(proc) (proc ? PID_KEY_((proc)->pid, Process_isMainThread((proc))) : 0)
 
 }*/
 
@@ -427,7 +430,7 @@ void Process_writeField(Process* this, RichString* str, ProcessField field) {
             buf += written;
             n -= written;
          }
-         const char* draw = CRT_treeStr[lastItem ? (this->settings->direction == 1 ? TREE_STR_BEND : TREE_STR_TEND) : TREE_STR_RTEE];
+         const char* draw = CRT_treeStr[lastItem ? TREE_STR_BEND : TREE_STR_RTEE];
          xSnprintf(buf, n, "%s%s ", draw, this->showChildren ? CRT_treeStr[TREE_STR_SHUT] : CRT_treeStr[TREE_STR_OPEN] );
          RichString_append(str, CRT_colors[PROCESS_TREE], buffer);
          Process_writeCommand(this, attr, baseattr, str);
@@ -562,6 +565,12 @@ void Process_sendSignal(Process* this, int sgn) {
 long Process_pidCompare(const void* v1, const void* v2) {
    Process* p1 = (Process*)v1;
    Process* p2 = (Process*)v2;
+   if (p1->pid == p2->pid) {
+      // workaround for there potentially being TWO entries for the same PID:
+      // one for the entire process, and another for the main thread
+      // (we'd like the process entry to come first, then the thread entry)
+      return ((long)Process_isMainThread(p1) - (long)Process_isMainThread(p2));
+   }
    return (p1->pid - p2->pid);
 }
 
@@ -597,7 +606,7 @@ long Process_compare(const void* v1, const void* v2) {
    case PGRP:
       return (p1->pgrp - p2->pgrp);
    case PID:
-      return (p1->pid - p2->pid);
+      return Process_pidCompare(p1, p2);
    case PPID:
       return (p1->ppid - p2->ppid);
    case PRIORITY:
@@ -608,7 +617,7 @@ long Process_compare(const void* v1, const void* v2) {
       return (p1->session - p2->session);
    case STARTTIME: {
       if (p1->starttime_ctime == p2->starttime_ctime)
-         return (p1->pid - p2->pid);
+         return Process_pidCompare(p1, p2);
       else
          return (p1->starttime_ctime - p2->starttime_ctime);
    }
@@ -627,6 +636,6 @@ long Process_compare(const void* v1, const void* v2) {
    case USER:
       return strcmp(p1->user ? p1->user : "", p2->user ? p2->user : "");
    default:
-      return (p1->pid - p2->pid);
+      return Process_pidCompare(p1, p2);
    }
 }
