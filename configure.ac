@@ -98,6 +98,14 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
 CFLAGS="$save_cflags"
 
 save_cflags="${CFLAGS}"
+CFLAGS="${CFLAGS} -fcommon"
+AC_MSG_CHECKING([whether gcc -fcommon option works])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [])],
+   [AC_MSG_RESULT([yes])],
+   [AC_MSG_ERROR([htop is written in a sloppy manner and requires a working -fcommon compiler option to avoid multiple-definition linker errors.])])
+CFLAGS="$save_cflags"
+
+save_cflags="${CFLAGS}"
 CFLAGS="$CFLAGS -Wextra"
 AC_MSG_CHECKING([if compiler supports -Wextra])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [])],[
