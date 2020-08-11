@@ -143,7 +143,10 @@ static long ProcessList_treeProcessCompare(const void* v1, const void* v2) {
    const Process *p1 = (const Process*)v1;
    const Process *p2 = (const Process*)v2;
 
-   return p1->pid - p2->pid;
+   if (p1->starttime_ctime == p2->starttime_ctime)
+      return Process_pidCompare(p1, p2);
+   else
+      return (p1->starttime_ctime - p2->starttime_ctime);
 }
 
 void ProcessList_sort(ProcessList* this) {
