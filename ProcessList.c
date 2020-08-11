@@ -203,8 +203,8 @@ void ProcessList_sort(ProcessList* this) {
       // Save settings
       int direction = this->settings->direction;
       int sortKey = this->settings->sortKey;
-      // Sort by PID
-      this->settings->sortKey = PID;
+      // Sort by start time (with PID as fallback)
+      this->settings->sortKey = STARTTIME;
       this->settings->direction = 1;
       Vector_quickSort(this->processes);
       // Restore settings
