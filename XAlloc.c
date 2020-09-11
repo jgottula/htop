@@ -46,6 +46,10 @@ void* xRealloc(void* ptr, size_t size) {
 
 #define xSnprintf(fmt, len, ...) do { int _l=len; int _n=snprintf(fmt, _l, __VA_ARGS__); if (!(_n > -1 && _n < _l)) { curs_set(1); endwin(); err(1, NULL); } } while(0)
 
+#ifdef HAVE_LIBNCURSESW
+#define xSwprintf(fmt, len, ...) do { int _l=len; int _n=swprintf(fmt, _l, __VA_ARGS__); if (!(_n > -1 && _n < _l)) { curs_set(1); endwin(); err(1, NULL); } } while(0)
+#endif
+
 #undef xStrdup
 #undef xStrdup_
 #ifdef NDEBUG
