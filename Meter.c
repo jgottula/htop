@@ -260,7 +260,18 @@ static void TextMeterMode_draw(Meter* this, int x, int y, int w) {
 
 /* ---------- BarMeterMode ---------- */
 
-static const char BarMeterMode_characters[] = "|#*@$%&.";
+#ifdef HAVE_LIBNCURSESW
+
+// U+2588: FULL BLOCK
+// U+2591: LIGHT SHADE
+// U+2592: MEDIUM SHADE
+// U+25A0: BLACK SQUARE
+static const wchar_t BarMeterMode_charUtf8 = L'\u2588';
+
+#endif
+
+static const char BarMeterMode_charAscii = '|';
+static const char BarMeterMode_monochars[] = "|#*@$%&.";
 
 static void BarMeterMode_draw(Meter* this, int x, int y, int w) {
    char buffer[METER_BUFFER_LEN];
@@ -283,11 +294,16 @@ static void BarMeterMode_draw(Meter* this, int x, int y, int w) {
       attrset(CRT_colors[RESET_COLOR]);
       return;
    }
-   char bar[w + 1];
-   
-   int blockSizes[10];
 
+#ifdef HAVE_LIBNCURSESW
+   wchar_t bar[w + 1];
+   xSwprintf(bar, w + 1, L"%*.*s", w, w, buffer);
+#else
+   char bar[w + 1];
    xSnprintf(bar, w + 1, "%*.*s", w, w, buffer);
+#endif
+
+   int blockSizes[10];
 
    // First draw in the bar[] buffer...
    int offset = 0;
@@ -306,9 +322,13 @@ static void BarMeterMode_draw(Meter* this, int x, int y, int w) {
       for (int j = offset; j < nextOffset; j++)
          if (bar[j] == ' ') {
             if (CRT_colorScheme == COLORSCHEME_MONOCHROME) {
-               bar[j] = BarMeterMode_characters[i];
+               bar[j] = BarMeterMode_monochars[i];
             } else {
-               bar[j] = '|';
+               bar[j] =
+#ifdef HAVE_LIBNCURSESW
+                  CRT_utf8 ? BarMeterMode_charUtf8 :
+#endif
+                  BarMeterMode_charAscii;
             }
          }
       offset = nextOffset;
@@ -318,13 +338,21 @@ static void BarMeterMode_draw(Meter* this, int x, int y, int w) {
    offset = 0;
    for (int i = 0; i < items; i++) {
       attrset(CRT_colors[Meter_attributes(this)[i]]);
+#ifdef HAVE_LIBNCURSESW
+      mvaddnwstr(y, x + offset, bar + offset, blockSizes[i]);
+#else
       mvaddnstr(y, x + offset, bar + offset, blockSizes[i]);
+#endif
       offset += blockSizes[i];
       offset = CLAMP(offset, 0, w);
    }
    if (offset < w) {
       attrset(CRT_colors[BAR_SHADOW]);
+#ifdef HAVE_LIBNCURSESW
+      mvaddnwstr(y, x + offset, bar + offset, w - offset);
+#else
       mvaddnstr(y, x + offset, bar + offset, w - offset);
+#endif
    }
 
    move(y, x + w + 1);

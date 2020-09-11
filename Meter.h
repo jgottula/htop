@@ -125,6 +125,15 @@ ListItem* Meter_toListItem(Meter* this, bool moving);
 
 /* ---------- BarMeterMode ---------- */
 
+#ifdef HAVE_LIBNCURSESW
+
+// U+2588: FULL BLOCK
+// U+2591: LIGHT SHADE
+// U+2592: MEDIUM SHADE
+// U+25A0: BLACK SQUARE
+#endif
+
+
 /* ---------- GraphMeterMode ---------- */
 
 #ifdef HAVE_LIBNCURSESW
