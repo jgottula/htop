@@ -195,6 +195,19 @@ int xSnprintf(char* buf, int len, const char* fmt, ...) {
    return n;
 }
 
+int xSwprintf(wchar_t* buf, int len, const wchar_t* fmt, ...) {
+   va_list vl;
+   va_start(vl, fmt);
+   int n = vswprintf(buf, len, fmt, vl);
+   va_end(vl);
+
+   if (n < 0 || n >= len) {
+      fail();
+   }
+
+   return n;
+}
+
 char* xStrdup(const char* str) {
    char* data = strdup(str);
    if (!data) {

@@ -59,6 +59,11 @@ int xAsprintf(char **strp, const char* fmt, ...);
 ATTR_FORMAT(printf, 3, 4)
 int xSnprintf(char *buf, int len, const char* fmt, ...);
 
+#ifdef HAVE_LIBNCURSESW
+/* ATTR_FORMAT(wprintf, 3, 4) */
+int xSwprintf(wchar_t *buf, int len, const wchar_t* fmt, ...);
+#endif
+
 char* xStrdup(const char* str) ATTR_NONNULL;
 
 char* xStrndup(const char* str, size_t len) ATTR_NONNULL;
