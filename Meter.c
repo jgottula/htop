@@ -262,15 +262,17 @@ static void TextMeterMode_draw(Meter* this, int x, int y, int w) {
 
 #ifdef HAVE_LIBNCURSESW
 
-// U+2588: FULL BLOCK
-// U+2591: LIGHT SHADE
-// U+2592: MEDIUM SHADE
-// U+25A0: BLACK SQUARE
-static const wchar_t BarMeterMode_charUtf8 = L'\u2588';
+//                       TERMINUS  CONSOLAS
+// U+2588: FULL BLOCK    y         y
+// U+2591: LIGHT SHADE   y         * [only rendered at size >8pt with Windows render engine?!]
+// U+2592: MEDIUM SHADE  y         * [only rendered at size >8pt with Windows render engine?!]
+// U+25A0: BLACK SQUARE  y         y
+static const wchar_t BarMeterMode_charUtf8 = L'#';
 
 #endif
 
-static const char BarMeterMode_charAscii = '|';
+static const char BarMeterMode_charAscii = '#';
+
 static const char BarMeterMode_monochars[] = "|#*@$%&.";
 
 static void BarMeterMode_draw(Meter* this, int x, int y, int w) {

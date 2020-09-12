@@ -127,12 +127,12 @@ ListItem* Meter_toListItem(Meter* this, bool moving);
 
 #ifdef HAVE_LIBNCURSESW
 
-// U+2588: FULL BLOCK
-// U+2591: LIGHT SHADE
-// U+2592: MEDIUM SHADE
-// U+25A0: BLACK SQUARE
+//                       TERMINUS  CONSOLAS
+// U+2588: FULL BLOCK    y         y
+// U+2591: LIGHT SHADE   y         * [only rendered at size >8pt with Windows render engine?!]
+// U+2592: MEDIUM SHADE  y         * [only rendered at size >8pt with Windows render engine?!]
+// U+25A0: BLACK SQUARE  y         y
 #endif
-
 
 /* ---------- GraphMeterMode ---------- */
 
