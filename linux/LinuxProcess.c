@@ -173,7 +173,7 @@ ProcessFieldData Process_fields[] = {
    [PPID] = { .name = "PPID", .title = "   PPID ", .description = "Parent process ID", .flags = 0, },
    [PGRP] = { .name = "PGRP", .title = "   PGRP ", .description = "Process group ID", .flags = 0, },
    [SESSION] = { .name = "SESSION", .title = "    SID ", .description = "Process's session ID", .flags = 0, },
-   [TTY_NR] = { .name = "TTY_NR", .title = "TTY      ", .description = "Controlling terminal", .flags = 0, },
+   [TTY_NR] = { .name = "TTY_NR", .title = "TTY     ", .description = "Controlling terminal", .flags = 0, },
    [TPGID] = { .name = "TPGID", .title = "  TPGID ", .description = "Process ID of the fg process group of the controlling terminal", .flags = 0, },
    [FLAGS] = { .name = "FLAGS", .title = NULL, .description = NULL, .flags = 0, },
    [MINFLT] = { .name = "MINFLT", .title = "     MINFLT ", .description = "Number of minor faults which have not required loading a memory page from disk", .flags = 0, },
@@ -340,10 +340,10 @@ void LinuxProcess_writeField(Process* this, RichString* str, ProcessField field)
    switch ((int)field) {
    case TTY_NR: {
       if (lp->ttyDevice) {
-         xSnprintf(buffer, n, "%-9s", lp->ttyDevice + 5 /* skip "/dev/" */);
+         xSnprintf(buffer, n, "%-8s", lp->ttyDevice + 5 /* skip "/dev/" */);
       } else {
          attr = CRT_colors[PROCESS_SHADOW];
-         xSnprintf(buffer, n, "?        ");
+         xSnprintf(buffer, n, "?       ");
       }
       break;
    }
