@@ -158,7 +158,7 @@ const char *CRT_treeStrUtf8[TREE_STR_COUNT] = {
    "\xe2\x94\x9c", // TREE_STR_RTEE ├
    "\xe2\x94\x94", // TREE_STR_BEND └
    "\xe2\x94\x8c", // TREE_STR_TEND ┌
-   "+",            // TREE_STR_OPEN +
+   "\xe2\x94\xbc", // TREE_STR_OPEN ┼
    "\xe2\x94\x80", // TREE_STR_SHUT ─
 };
 
