@@ -291,9 +291,9 @@ void Process_writeField(const Process* this, RichString* str, ProcessField field
           for (int i = 0; i < maxIndent - 1; i++) {
             int written, ret;
             if (indent & (1 << i))
-               ret = snprintf(buf, n, "%s  ", CRT_treeStr[TREE_STR_VERT]);
+               ret = snprintf(buf, n, "%s ", CRT_treeStr[TREE_STR_VERT]);
             else
-               ret = snprintf(buf, n, "   ");
+               ret = snprintf(buf, n, "  ");
             if (ret < 0 || ret >= n) {
                written = n;
             } else {
@@ -302,8 +302,9 @@ void Process_writeField(const Process* this, RichString* str, ProcessField field
             buf += written;
             n -= written;
          }
-         const char* draw = CRT_treeStr[lastItem ? TREE_STR_BEND : TREE_STR_RTEE];
-         xSnprintf(buf, n, "%s%s ", draw, this->showChildren ? CRT_treeStr[TREE_STR_SHUT] : CRT_treeStr[TREE_STR_OPEN] );
+         const char *c1 = CRT_treeStr[lastItem ? TREE_STR_BEND : TREE_STR_RTEE];
+         const char *c2 = this->showChildren ? " " : CRT_treeStr[TREE_STR_HORZ];
+         xSnprintf(buf, n, "%s%s", c1, c2);
          RichString_append(str, CRT_colors[PROCESS_TREE], buffer);
          Process_writeCommand(this, attr, baseattr, str);
          return;
