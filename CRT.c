@@ -54,8 +54,6 @@ typedef enum TreeStr_ {
    TREE_STR_RTEE,
    TREE_STR_BEND,
    TREE_STR_TEND,
-   TREE_STR_OPEN,
-   TREE_STR_SHUT,
    TREE_STR_COUNT
 } TreeStr;
 
@@ -143,11 +141,9 @@ void CRT_handleSIGSEGV(int sgn);
 const char *CRT_treeStrAscii[TREE_STR_COUNT] = {
    "-", // TREE_STR_HORZ
    "|", // TREE_STR_VERT
-   "`", // TREE_STR_RTEE
-   "`", // TREE_STR_BEND
-   ",", // TREE_STR_TEND
-   "+", // TREE_STR_OPEN
-   "-", // TREE_STR_SHUT
+   "+", // TREE_STR_RTEE
+   "+", // TREE_STR_BEND
+   "+", // TREE_STR_TEND
 };
 
 #ifdef HAVE_LIBNCURSESW
@@ -158,8 +154,6 @@ const char *CRT_treeStrUtf8[TREE_STR_COUNT] = {
    "\xe2\x94\x9c", // TREE_STR_RTEE ├
    "\xe2\x94\x94", // TREE_STR_BEND └
    "\xe2\x94\x8c", // TREE_STR_TEND ┌
-   "\xe2\x94\xbc", // TREE_STR_OPEN ┼
-   "\xe2\x94\x80", // TREE_STR_SHUT ─
 };
 
 bool CRT_utf8 = false;
