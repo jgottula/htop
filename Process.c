@@ -225,22 +225,22 @@ void Process_outputRate(RichString* str, char* buffer, int n, double rate, int c
       processMegabytesColor = CRT_colors[PROCESS];
    }
    if (isnan(rate)) {
-      int len = snprintf(buffer, n, "    no perm ");
+      int len = snprintf(buffer, n, "  no perm ");
       RichString_appendn(str, CRT_colors[PROCESS_SHADOW], buffer, len);
    } else if (rate < ONE_K) {
-      int len = snprintf(buffer, n, "%7.2f B/s ", rate);
+      int len = snprintf(buffer, n, "%6.1fB/s ", rate);
       RichString_appendn(str, processColor, buffer, len);
    } else if (rate < ONE_M) {
-      int len = snprintf(buffer, n, "%7.2f K/s ", rate / ONE_K);
+      int len = snprintf(buffer, n, "%6.1fK/s ", rate / ONE_K);
       RichString_appendn(str, processColor, buffer, len);
    } else if (rate < ONE_G) {
-      int len = snprintf(buffer, n, "%7.2f M/s ", rate / ONE_M);
+      int len = snprintf(buffer, n, "%6.1fM/s ", rate / ONE_M);
       RichString_appendn(str, processMegabytesColor, buffer, len);
    } else if (rate < ONE_T) {
-      int len = snprintf(buffer, n, "%7.2f G/s ", rate / ONE_G);
+      int len = snprintf(buffer, n, "%6.1fG/s ", rate / ONE_G);
       RichString_appendn(str, largeNumberColor, buffer, len);
    } else {
-      int len = snprintf(buffer, n, "%7.2f T/s ", rate / ONE_T);
+      int len = snprintf(buffer, n, "%6.1fT/s ", rate / ONE_T);
       RichString_appendn(str, largeNumberColor, buffer, len);
    }
 }
