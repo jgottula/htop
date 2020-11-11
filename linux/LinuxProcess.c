@@ -147,6 +147,7 @@ typedef struct LinuxProcess_ {
    float blkio_delay_percent;
    float swapin_delay_percent;
    #endif
+   bool isQemu;
 } LinuxProcess;
 
 #ifndef Process_isMainThread
@@ -438,9 +439,21 @@ long LinuxProcess_compare(const void* v1, const void* v2) {
       // custom sorting for tree view:
       // - primary:   starttime
       // - secondary: PID comparison (with the entire-process vs main-thread-for-process shim)
+      // - ADDITIONAL EXCEPTION TO THE RULES:
+      //   - qemu processes are sorted above everything else
+      //   - among qemu processes, the normal sorting rules above apply
+      //   - so we should have two layers of sorting:
+      //     - first:  qemu  processes (by starttime, then by pid)
+      //     - second: other processes (by starttime, then by pid)
+      // - ANOTHER SPECIAL EXCEPTION:
+      //   - PID 1 always gets special treatment so it stays at the VERY top
       // NOTE: do NOT fall back into Process_compare; just don't do that!
-      if (p1->starttime != p2->starttime)
-         return (p1->starttime - p2->starttime);
+      if (p1->super.pid != 1 && p2->super.pid != 1) {
+         if (p1->isQemu != p2->isQemu)
+            return -((int)p1->isQemu - (int)p2->isQemu);
+         if (p1->starttime != p2->starttime)
+            return (p1->starttime - p2->starttime);
+      }
       return Process_pidCompare(&p1->super, &p2->super);
    }
    long long diff;

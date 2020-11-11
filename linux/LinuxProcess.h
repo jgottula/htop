@@ -138,6 +138,7 @@ typedef struct LinuxProcess_ {
    float blkio_delay_percent;
    float swapin_delay_percent;
    #endif
+   bool isQemu;
 } LinuxProcess;
 
 #ifndef Process_isMainThread
