@@ -155,6 +155,7 @@ typedef struct LinuxProcess_ {
    unsigned long ctxt_total;
    unsigned long ctxt_diff;
    char *secattr;
+   bool isQemu;
 } LinuxProcess;
 
 #define Process_isKernelThread(_process) (((const LinuxProcess*)(_process))->isKernelThread)

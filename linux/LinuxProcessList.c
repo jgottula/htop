@@ -878,6 +878,36 @@ static bool LinuxProcessList_readCmdlineFile(Process* process, const char* dirna
    return true;
 }
 
+// MUST be called AFTER LinuxProcessList_readCmdlineFile (so that process->isKernelThread is initialized!)
+static bool LinuxProcessList_readExeLink(Process* process, const char* dirname, const char* name) {
+   ((LinuxProcess*)process)->isQemu = false;
+
+   // don't even bother with kernel threads (readlink will inevitably fail with ENOENT anyway)
+   if (((LinuxProcess*)process)->isKernelThread)
+      return true;
+
+   char filename[MAX_NAME+1];
+   xSnprintf(filename, MAX_NAME, "%s/%s/exe", dirname, name);
+
+   char exe[4096+1]; // this is way more than enough
+   ssize_t len = readlink(filename, exe, sizeof(exe) - 1);
+
+   // explicitly ignore ENOENT (this comes up when attempting to read 'exe' of kernel threads for example)
+   if (len < 0 && errno == ENOENT)
+      return true;
+
+   // on readlink error, we *would* return false, except actually there may be some false positives, so just ignore it
+   if (len < 0)
+      return true;
+
+   exe[len] = '\0';
+
+   static const char prefix[] = "/usr/bin/qemu-system-";
+   ((LinuxProcess*)process)->isQemu = (strncmp(exe, prefix, strlen(prefix)) == 0);
+
+   return true;
+}
+
 static char* LinuxProcessList_updateTtyDevice(TtyDriver* ttyDrivers, unsigned int tty_nr) {
    unsigned int maj = major(tty_nr);
    unsigned int min = minor(tty_nr);
@@ -1036,6 +1066,10 @@ static bool LinuxProcessList_recurseProcTree(LinuxProcessList* this, const char*
          #endif
 
          if (! LinuxProcessList_readCmdlineFile(proc, dirname, name)) {
+            goto errorReadingProcess;
+         }
+
+         if (! LinuxProcessList_readExeLink(proc, dirname, name)) {
             goto errorReadingProcess;
          }
 
@@ -1461,11 +1495,31 @@ void ProcessList_goThroughEntries(ProcessList* super, bool pauseProcessUpdate) {
 }
 
 long ProcessList_treeProcessCompare(const void* v1, const void* v2) {
+   // custom sorting for tree view:
+   // - primary:   starttime
+   // - secondary: PID comparison (with the entire-process vs main-thread-for-process shim)
+   // - ADDITIONAL EXCEPTION TO THE RULES:
+   //   - qemu processes are sorted above everything else
+   //   - among qemu processes, the normal sorting rules above apply
+   //   - so we should have two layers of sorting:
+   //     - first:  qemu  processes (by starttime, then by pid)
+   //     - second: other processes (by starttime, then by pid)
+   // - ANOTHER SPECIAL EXCEPTION:
+   //   - PID 1 always gets special treatment so it stays at the VERY top
+
    const Process *p1 = (const Process*)v1;
    const Process *p2 = (const Process*)v2;
 
-   if (p1->starttime_ctime != p2->starttime_ctime)
-      return (p1->starttime_ctime - p2->starttime_ctime);
+   const LinuxProcess *l1 = (const LinuxProcess*)v1;
+   const LinuxProcess *l2 = (const LinuxProcess*)v2;
+
+   if (p1->pid != 1 && p2->pid != 1) {
+      if (l1->isQemu != l2->isQemu)
+         return -((int)l1->isQemu - (int)l2->isQemu);
+
+      if (p1->starttime_ctime != p2->starttime_ctime)
+         return (p1->starttime_ctime - p2->starttime_ctime);
+   }
 
    return Process_pidCompare(p1, p2);
 }
