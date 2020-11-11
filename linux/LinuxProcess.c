@@ -427,12 +427,21 @@ void LinuxProcess_writeField(Process* this, RichString* str, ProcessField field)
 long LinuxProcess_compare(const void* v1, const void* v2) {
    LinuxProcess *p1, *p2;
    Settings *settings = ((Process*)v1)->settings;
-   if (settings->direction == 1) {
+   if (settings->treeView || settings->direction == 1) {
       p1 = (LinuxProcess*)v1;
       p2 = (LinuxProcess*)v2;
    } else {
       p2 = (LinuxProcess*)v1;
       p1 = (LinuxProcess*)v2;
+   }
+   if (settings->treeView) {
+      // custom sorting for tree view:
+      // - primary:   starttime
+      // - secondary: PID comparison (with the entire-process vs main-thread-for-process shim)
+      // NOTE: do NOT fall back into Process_compare; just don't do that!
+      if (p1->starttime != p2->starttime)
+         return (p1->starttime - p2->starttime);
+      return Process_pidCompare(&p1->super, &p2->super);
    }
    long long diff;
    switch ((int)settings->sortKey) {

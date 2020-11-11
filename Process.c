@@ -578,6 +578,10 @@ long Process_pidCompare(const void* v1, const void* v2) {
 long Process_compare(const void* v1, const void* v2) {
    Process *p1, *p2;
    Settings *settings = ((Process*)v1)->settings;
+   if (settings->treeView) {
+      // should never get here; everything should be handled in LinuxProcess_compare!
+      abort();
+   }
    if (settings->direction == 1) {
       p1 = (Process*)v1;
       p2 = (Process*)v2;

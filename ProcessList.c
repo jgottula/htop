@@ -200,16 +200,7 @@ void ProcessList_sort(ProcessList* this) {
    if (!this->settings->treeView) {
       Vector_insertionSort(this->processes);
    } else {
-      // Save settings
-      int direction = this->settings->direction;
-      int sortKey = this->settings->sortKey;
-      // Sort by start time (with PID as fallback)
-      this->settings->sortKey = STARTTIME;
-      this->settings->direction = 1;
       Vector_quickSort(this->processes);
-      // Restore settings
-      this->settings->sortKey = sortKey;
-      this->settings->direction = direction;
       int vsize = Vector_size(this->processes);
       // Find all processes whose parent is not visible
       int size;
