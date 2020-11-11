@@ -1459,3 +1459,13 @@ void ProcessList_goThroughEntries(ProcessList* super, bool pauseProcessUpdate) {
    gettimeofday(&tv, NULL);
    LinuxProcessList_recurseProcTree(this, PROCDIR, NULL, period, tv);
 }
+
+long ProcessList_treeProcessCompare(const void* v1, const void* v2) {
+   const Process *p1 = (const Process*)v1;
+   const Process *p2 = (const Process*)v2;
+
+   if (p1->starttime_ctime != p2->starttime_ctime)
+      return (p1->starttime_ctime - p2->starttime_ctime);
+
+   return Process_pidCompare(p1, p2);
+}

@@ -75,6 +75,7 @@ typedef struct ProcessList_ {
 ProcessList* ProcessList_new(UsersTable* usersTable, Hashtable* pidMatchList, uid_t userId);
 void ProcessList_delete(ProcessList* pl);
 void ProcessList_goThroughEntries(ProcessList* super, bool pauseProcessUpdate);
+long ProcessList_treeProcessCompare(const void* v1, const void* v2);
 
 
 ProcessList* ProcessList_init(ProcessList* this, const ObjectClass* klass, UsersTable* usersTable, Hashtable* pidMatchList, uid_t userId);
