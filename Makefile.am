@@ -12,7 +12,7 @@ applications_DATA = htop.desktop
 pixmapdir = $(datadir)/pixmaps
 pixmap_DATA = htop.png
 
-AM_CFLAGS = -fcommon -pedantic -Wall $(wextra_flag) -Wno-enum-conversion -Wno-cast-function-type -Wno-stringop-truncation -Wno-format-truncation -Wno-unused-result -std=c99 -D_XOPEN_SOURCE_EXTENDED -DSYSCONFDIR=\"$(sysconfdir)\" -I"$(top_srcdir)/$(my_htop_platform)"
+AM_CFLAGS = -fvisibility=hidden -fcommon -pedantic -Wall $(wextra_flag) -Wno-enum-conversion -Wno-cast-function-type -Wno-stringop-truncation -Wno-format-truncation -Wno-unused-result -std=c99 -D_XOPEN_SOURCE_EXTENDED -DSYSCONFDIR=\"$(sysconfdir)\" -I"$(top_srcdir)/$(my_htop_platform)"
 AM_LDFLAGS =
 AM_CPPFLAGS = -DNDEBUG
 
