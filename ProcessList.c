@@ -80,7 +80,7 @@ void ProcessList_goThroughEntries(ProcessList* pl);
 
 ProcessList* ProcessList_init(ProcessList* this, ObjectClass* klass, UsersTable* usersTable, Hashtable* pidWhiteList, uid_t userId) {
    this->processes = Vector_new(klass, true, DEFAULT_SIZE);
-   this->processTable = Hashtable_new(140, false);
+   this->processTable = Hashtable_new(8192, false);
    this->usersTable = usersTable;
    this->pidWhiteList = pidWhiteList;
    this->userId = userId;
