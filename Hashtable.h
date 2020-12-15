@@ -10,6 +10,9 @@ in the source distribution for its full text.
 */
 
 #include <stdbool.h>
+#include <limits.h>
+
+#define HASHTABLE_KEY_BITS (CHAR_BIT * sizeof(unsigned int))
 
 typedef struct Hashtable_ Hashtable;
 
