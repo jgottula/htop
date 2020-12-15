@@ -184,7 +184,9 @@ typedef struct ProcessClass_ {
 
 #define Process_sortState(state) ((state) == 'I' ? 0x100 : (state))
 
-#define PID_KEY_(pid, isMainThread) (((unsigned int)((pid)) << 1) | ((isMainThread) ? 1U : 0U))
+#define PID_KEY_BIT_MAINTHREAD (1U << (HASHTABLE_KEY_BITS - 1))
+
+#define PID_KEY_(pid, isMainThread) ((unsigned int)((pid)) | ((isMainThread) ? PID_KEY_BIT_MAINTHREAD : 0U))
 #define PID_KEY(proc) (proc ? PID_KEY_((proc)->pid, Process_isMainThread((proc))) : 0)
 
 }*/
