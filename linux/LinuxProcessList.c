@@ -9,6 +9,7 @@ in the source distribution for its full text.
 #include "LinuxProcess.h"
 #include "CRT.h"
 #include "StringUtils.h"
+#include "FastStrtox.h"
 #include <errno.h>
 #include <sys/time.h>
 #include <sys/utsname.h>
@@ -328,48 +329,48 @@ static bool LinuxProcessList_readStatFile(Process *process, const char* dirname,
 
    process->state = location[0];
    location += 2;
-   process->ppid = strtol(location, &location, 10);
+   process->ppid = fast_strtol(&location);
    location += 1;
-   process->pgrp = strtoul(location, &location, 10);
+   process->pgrp = fast_strtoul(&location);
    location += 1;
-   process->session = strtoul(location, &location, 10);
+   process->session = fast_strtoul(&location);
    location += 1;
-   process->tty_nr = strtoul(location, &location, 10);
+   process->tty_nr = fast_strtoul(&location);
    location += 1;
-   process->tpgid = strtol(location, &location, 10);
+   process->tpgid = fast_strtol(&location);
    location += 1;
-   process->flags = strtoul(location, &location, 10);
+   process->flags = fast_strtoul(&location);
    location += 1;
-   process->minflt = strtoull(location, &location, 10);
+   process->minflt = fast_strtoull(&location);
    location += 1;
-   lp->cminflt = strtoull(location, &location, 10);
+   lp->cminflt = fast_strtoull(&location);
    location += 1;
-   process->majflt = strtoull(location, &location, 10);
+   process->majflt = fast_strtoull(&location);
    location += 1;
-   lp->cmajflt = strtoull(location, &location, 10);
+   lp->cmajflt = fast_strtoull(&location);
    location += 1;
-   lp->utime = LinuxProcess_adjustTime(strtoull(location, &location, 10));
+   lp->utime = LinuxProcess_adjustTime(fast_strtoull(&location));
    location += 1;
-   lp->stime = LinuxProcess_adjustTime(strtoull(location, &location, 10));
+   lp->stime = LinuxProcess_adjustTime(fast_strtoull(&location));
    location += 1;
-   lp->cutime = LinuxProcess_adjustTime(strtoull(location, &location, 10));
+   lp->cutime = LinuxProcess_adjustTime(fast_strtoull(&location));
    location += 1;
-   lp->cstime = LinuxProcess_adjustTime(strtoull(location, &location, 10));
+   lp->cstime = LinuxProcess_adjustTime(fast_strtoull(&location));
    location += 1;
-   process->priority = strtol(location, &location, 10);
+   process->priority = fast_strtol(&location);
    location += 1;
-   process->nice = strtol(location, &location, 10);
+   process->nice = fast_strtol(&location);
    location += 1;
-   process->nlwp = strtol(location, &location, 10);
+   process->nlwp = fast_strtol(&location);
    location += 1;
    location = strchr(location, ' ')+1;
-   lp->starttime = strtoll(location, &location, 10);
+   lp->starttime = fast_strtoll(&location);
    location += 1;
    for (int i=0; i<15; i++) location = strchr(location, ' ')+1;
-   process->exit_signal = strtol(location, &location, 10);
+   process->exit_signal = fast_strtol(&location);
    location += 1;
    assert(location != NULL);
-   process->processor = strtol(location, &location, 10);
+   process->processor = fast_strtol(&location);
    
    process->time = lp->utime + lp->stime;
    
@@ -476,13 +477,13 @@ static bool LinuxProcessList_readStatmFile(LinuxProcess* process, const char* di
 
    char *p = buf;
    errno = 0;
-   process->super.m_size = strtol(p, &p, 10); if (*p == ' ') p++;
-   process->super.m_resident = strtol(p, &p, 10); if (*p == ' ') p++;
-   process->m_share = strtol(p, &p, 10); if (*p == ' ') p++;
-   process->m_trs = strtol(p, &p, 10); if (*p == ' ') p++;
-   process->m_lrs = strtol(p, &p, 10); if (*p == ' ') p++;
-   process->m_drs = strtol(p, &p, 10); if (*p == ' ') p++;
-   process->m_dt = strtol(p, &p, 10);
+   process->super.m_size = fast_strtol(&p); if (*p == ' ') p++;
+   process->super.m_resident = fast_strtol(&p); if (*p == ' ') p++;
+   process->m_share = fast_strtol(&p); if (*p == ' ') p++;
+   process->m_trs = fast_strtol(&p); if (*p == ' ') p++;
+   process->m_lrs = fast_strtol(&p); if (*p == ' ') p++;
+   process->m_drs = fast_strtol(&p); if (*p == ' ') p++;
+   process->m_dt = fast_strtol(&p);
    return (errno == 0);
 }
 

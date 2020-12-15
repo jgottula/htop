@@ -22,6 +22,8 @@ AM_INIT_AUTOMAKE([1.11])
 AC_PROG_CC
 AM_PROG_CC_C_O
 
+AC_PROG_CXX
+
 # Required by hwloc scripts
 AC_USE_SYSTEM_EXTENSIONS
 

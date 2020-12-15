@@ -16,6 +16,8 @@ AM_CFLAGS = -fvisibility=hidden -fcommon -pedantic -Wall $(wextra_flag) -Wno-enu
 AM_LDFLAGS =
 AM_CPPFLAGS = -DNDEBUG
 
+AM_CXXFLAGS = -std=c++20 -Wall -fvisibility=hidden
+
 myhtopsources = AvailableMetersPanel.c CategoriesPanel.c CheckItem.c \
 ClockMeter.c ColorsPanel.c ColumnsPanel.c CPUMeter.c CRT.c MainPanel.c \
 DisplayOptionsPanel.c FunctionBar.c Hashtable.c Header.c htop.c ListItem.c \
@@ -24,7 +26,7 @@ BatteryMeter.c Process.c ProcessList.c RichString.c ScreenManager.c Settings.c \
 SignalsPanel.c StringUtils.c SwapMeter.c TasksMeter.c UptimeMeter.c \
 TraceScreen.c UsersTable.c Vector.c AvailableColumnsPanel.c AffinityPanel.c \
 HostnameMeter.c OpenFilesScreen.c Affinity.c IncSet.c Action.c EnvScreen.c \
-InfoScreen.c XAlloc.c
+InfoScreen.c XAlloc.c FastStrtox.cxx
 
 myhtopheaders = AvailableColumnsPanel.h AvailableMetersPanel.h \
 CategoriesPanel.h CheckItem.h ClockMeter.h ColorsPanel.h ColumnsPanel.h \
