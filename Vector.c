@@ -83,6 +83,26 @@ int Vector_count(Vector* this) {
 
 #endif
 
+Vector *Vector_copy(Vector* that) {
+   if (!that)       abort(); // SHOULD NEVER HAPPEN
+   if (that->owner) abort(); // SHOULD NEVER HAPPEN
+
+   assert(Vector_isConsistent(that));
+
+   Vector* this = xMalloc(sizeof(Vector));
+
+   this->type       = that->type;
+   this->arraySize  = that->arraySize;
+   this->growthRate = that->growthRate;
+   this->items      = that->items;
+   this->owner      = that->owner;
+
+   this->array = (Object**) xCalloc(this->arraySize, sizeof(Object*));
+   memcpy(this->array, that->array, this->arraySize * sizeof(Object*));
+
+   return this;
+}
+
 void Vector_prune(Vector* this) {
    assert(Vector_isConsistent(this));
    if (this->owner) {

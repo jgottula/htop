@@ -37,6 +37,8 @@ int Vector_count(Vector* this);
 
 #endif
 
+Vector *Vector_copy(Vector* that);
+
 void Vector_prune(Vector* this);
 
 // If I were to use only one sorting algorithm for both cases, it would probably be this one:
