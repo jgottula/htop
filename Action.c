@@ -121,10 +121,10 @@ static bool changePriority(MainPanel* panel, int delta) {
    return anyTagged;
 }
 
-static void addUserToVector(int key, void* userCast, void* panelCast) {
+static void addUserToVector(unsigned int key, void* userCast, void* panelCast) {
    char* user = (char*) userCast;
    Panel* panel = (Panel*) panelCast;
-   Panel_add(panel, (Object*) ListItem_new(user, key));
+   Panel_add(panel, (Object*) ListItem_new(user, (int)key));
 }
 
 bool Action_setUserOnly(const char* userName, uid_t* userId) {

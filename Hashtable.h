@@ -13,7 +13,7 @@ in the source distribution for its full text.
 
 typedef struct Hashtable_ Hashtable;
 
-typedef void(*Hashtable_PairFunction)(int, void*, void*);
+typedef void(*Hashtable_PairFunction)(unsigned int, void*, void*);
 
 typedef struct HashtableItem {
    unsigned int key;
