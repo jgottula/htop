@@ -230,6 +230,7 @@ static void LinuxProcessList_initNetlinkSocket(LinuxProcessList* this) {
 
 #endif
 
+__attribute__((noinline))
 ProcessList* ProcessList_new(UsersTable* usersTable, Hashtable* pidWhiteList, uid_t userId) {
    LinuxProcessList* this = xCalloc(1, sizeof(LinuxProcessList));
    ProcessList* pl = &(this->super);
@@ -271,6 +272,7 @@ ProcessList* ProcessList_new(UsersTable* usersTable, Hashtable* pidWhiteList, ui
    return pl;
 }
 
+__attribute__((noinline))
 void ProcessList_delete(ProcessList* pl) {
    LinuxProcessList* this = (LinuxProcessList*) pl;
    ProcessList_done(pl);
@@ -298,6 +300,7 @@ static inline unsigned long long LinuxProcess_adjustTime(unsigned long long t) {
    return (unsigned long long) t * jiffytime * 100;
 }
 
+__attribute__((noinline))
 static bool LinuxProcessList_readStatFile(Process *process, const char* dirname, const char* name, char* command, int* commLen) {
    LinuxProcess* lp = (LinuxProcess*) process;
    char filename[MAX_NAME+1];
@@ -378,6 +381,7 @@ static bool LinuxProcessList_readStatFile(Process *process, const char* dirname,
 }
 
 
+__attribute__((noinline))
 static bool LinuxProcessList_statProcessDir(Process* process, const char* dirname, char* name) {
    char filename[MAX_NAME+1];
    filename[MAX_NAME] = '\0';
@@ -393,6 +397,7 @@ static bool LinuxProcessList_statProcessDir(Process* process, const char* dirnam
 
 #ifdef HAVE_TASKSTATS
 
+__attribute__((noinline))
 static void LinuxProcessList_readIoFile(LinuxProcess* process, const char* dirname, char* name, unsigned long long now) {
    char filename[MAX_NAME+1];
    filename[MAX_NAME] = '\0';
@@ -464,6 +469,7 @@ static void LinuxProcessList_readIoFile(LinuxProcess* process, const char* dirna
 
 
 
+__attribute__((noinline))
 static bool LinuxProcessList_readStatmFile(LinuxProcess* process, const char* dirname, const char* name) {
    char filename[MAX_NAME+1];
    xSnprintf(filename, MAX_NAME, "%s/%s/statm", dirname, name);
@@ -489,6 +495,7 @@ static bool LinuxProcessList_readStatmFile(LinuxProcess* process, const char* di
 
 #ifdef HAVE_OPENVZ
 
+__attribute__((noinline))
 static void LinuxProcessList_readOpenVZData(LinuxProcess* process, const char* dirname, const char* name) {
    if ( (access("/proc/vz", R_OK) != 0)) {
       process->vpid = process->super.pid;
@@ -517,6 +524,7 @@ static void LinuxProcessList_readOpenVZData(LinuxProcess* process, const char* d
 
 #ifdef HAVE_CGROUP
 
+__attribute__((noinline))
 static void LinuxProcessList_readCGroupFile(LinuxProcess* process, const char* dirname, const char* name) {
    char filename[MAX_NAME+1];
    xSnprintf(filename, MAX_NAME, "%s/%s/cgroup", dirname, name);
@@ -552,6 +560,7 @@ static void LinuxProcessList_readCGroupFile(LinuxProcess* process, const char* d
 
 #ifdef HAVE_VSERVER
 
+__attribute__((noinline))
 static void LinuxProcessList_readVServerData(LinuxProcess* process, const char* dirname, const char* name) {
    char filename[MAX_NAME+1];
    xSnprintf(filename, MAX_NAME, "%s/%s/status", dirname, name);
@@ -583,6 +592,7 @@ static void LinuxProcessList_readVServerData(LinuxProcess* process, const char* 
 
 #endif
 
+__attribute__((noinline))
 static void LinuxProcessList_readOomData(LinuxProcess* process, const char* dirname, const char* name) {
    char filename[MAX_NAME+1];
    xSnprintf(filename, MAX_NAME, "%s/%s/oom_score", dirname, name);
@@ -603,6 +613,7 @@ static void LinuxProcessList_readOomData(LinuxProcess* process, const char* dirn
 
 #ifdef HAVE_DELAYACCT
 
+__attribute__((noinline))
 static int handleNetlinkMsg(struct nl_msg *nlmsg, void *linuxProcess) {
    struct nlmsghdr *nlhdr;
    struct nlattr *nlattrs[TASKSTATS_TYPE_MAX + 1];
@@ -637,6 +648,7 @@ static int handleNetlinkMsg(struct nl_msg *nlmsg, void *linuxProcess) {
    return NL_OK;
 }
 
+__attribute__((noinline))
 static void LinuxProcessList_readDelayAcctData(LinuxProcessList* this, LinuxProcess* process) {
    struct nl_msg *msg;
 
@@ -670,6 +682,7 @@ static void LinuxProcessList_readDelayAcctData(LinuxProcessList* this, LinuxProc
 
 #endif
 
+__attribute__((noinline))
 static void LinuxProcessList_readVMSwapData(LinuxProcess* process, const char* dirname, const char* name) {
    char filename[MAX_NAME+1];
    snprintf(filename, MAX_NAME, "%s/%s/status", dirname, name);
@@ -700,6 +713,7 @@ static void setCommand(Process* process, const char* command, int len) {
    process->commLen = len;
 }
 
+__attribute__((noinline))
 static bool LinuxProcessList_readCmdlineFile(Process* process, const char* dirname, const char* name) {
    char filename[MAX_NAME+1];
    xSnprintf(filename, MAX_NAME, "%s/%s/cmdline", dirname, name);
@@ -739,6 +753,7 @@ static bool LinuxProcessList_readCmdlineFile(Process* process, const char* dirna
 }
 
 // MUST be called AFTER LinuxProcessList_readCmdlineFile (so that process->isKernelThread is initialized!)
+__attribute__((noinline))
 static bool LinuxProcessList_readExeLink(Process* process, const char* dirname, const char* name) {
    ((LinuxProcess*)process)->isQemu = false;
 
@@ -768,6 +783,7 @@ static bool LinuxProcessList_readExeLink(Process* process, const char* dirname, 
    return true;
 }
 
+__attribute__((noinline))
 static char* LinuxProcessList_updateTtyDevice(TtyDriver* ttyDrivers, unsigned int tty_nr) {
    unsigned int maj = major(tty_nr);
    unsigned int min = minor(tty_nr);
@@ -810,6 +826,7 @@ static char* LinuxProcessList_updateTtyDevice(TtyDriver* ttyDrivers, unsigned in
    return out;
 }
 
+__attribute__((noinline))
 static bool LinuxProcessList_recurseProcTree(LinuxProcessList* this, const char* dirname, Process* parent, double period, struct timeval tv) {
    ProcessList* pl = (ProcessList*) this;
    DIR* dir;
@@ -994,6 +1011,7 @@ static bool LinuxProcessList_recurseProcTree(LinuxProcessList* this, const char*
    return true;
 }
 
+__attribute__((noinline))
 static inline void LinuxProcessList_scanMemoryInfo(ProcessList* this) {
    unsigned long long int swapFree = 0;
    unsigned long long int shmem = 0;
@@ -1043,6 +1061,7 @@ static inline void LinuxProcessList_scanMemoryInfo(ProcessList* this) {
    fclose(file);
 }
 
+__attribute__((noinline))
 static inline double LinuxProcessList_scanCPUTime(LinuxProcessList* this) {
 
    FILE* file = fopen(PROCSTATFILE, "r");

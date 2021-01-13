@@ -52,6 +52,7 @@ static constexpr auto generate_pow10_array() { return generate_pow10_array_inter
 
 
 template<std::integral T>
+[[gnu::noinline]]
 static inline T fast_strtox(char **str)
 {
 	const char *ptr = *str;
