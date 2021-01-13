@@ -87,6 +87,12 @@ static inline T fast_strtox(char **str)
 		++end;
 	}
 
+	// if we have no digits, just give up
+	if (n_digits == 0) {
+		*str = const_cast<char *>(ptr);
+		return 0;
+	}
+
 	// precomputed array with powers of 10: from 10^max_digits down to 10^0
 	static constexpr auto POW10 = generate_pow10_array<T>();
 
