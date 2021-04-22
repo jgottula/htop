@@ -845,6 +845,7 @@ static bool LinuxProcessList_recurseProcTree(LinuxProcessList* this, const char*
    int cpus = pl->cpuCount;
    bool hideKernelThreads = settings->hideKernelThreads;
    bool hideUserlandThreads = settings->hideUserlandThreads;
+   bool showOnlyKernelThreads = settings->showOnlyKernelThreads;
    while ((entry = readdir(dir)) != NULL) {
       char* name = entry->d_name;
 
@@ -885,7 +886,11 @@ static bool LinuxProcessList_recurseProcTree(LinuxProcessList* this, const char*
       if (! LinuxProcessList_readStatmFile(lp, dirname, name))
          goto errorReadingProcess;
 
-      proc->show = ! ((hideKernelThreads && Process_isKernelThread(proc)) || (hideUserlandThreads && Process_isUserlandThread(proc)));
+      if (showOnlyKernelThreads) {
+         proc->show = Process_isKernelThread(proc);
+      } else {
+         proc->show = ! ((hideKernelThreads && Process_isKernelThread(proc)) || (hideUserlandThreads && Process_isUserlandThread(proc)));
+      }
 
       char command[MAX_NAME+1];
       unsigned long long int lasttimes = (lp->utime + lp->stime);

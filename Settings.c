@@ -51,6 +51,7 @@ typedef struct Settings_ {
    bool showThreadNames;
    bool hideKernelThreads;
    bool hideUserlandThreads;
+   bool showOnlyKernelThreads;
    bool highlightBaseName;
    bool highlightMegabytes;
    bool highlightThreads;
@@ -199,6 +200,8 @@ static bool Settings_read(Settings* this, const char* fileName) {
          this->hideKernelThreads = atoi(option[1]);
       } else if (String_eq(option[0], "hide_userland_threads")) {
          this->hideUserlandThreads = atoi(option[1]);
+      } else if (String_eq(option[0], "show_only_kernel_threads")) {
+         this->showOnlyKernelThreads = atoi(option[1]);
       } else if (String_eq(option[0], "shadow_other_users")) {
          this->shadowOtherUsers = atoi(option[1]);
       } else if (String_eq(option[0], "show_thread_names")) {
@@ -298,6 +301,7 @@ bool Settings_write(Settings* this) {
    fprintf(fd, "sort_direction=%d\n", (int) this->direction);
    fprintf(fd, "hide_kernel_threads=%d\n", (int) this->hideKernelThreads);
    fprintf(fd, "hide_userland_threads=%d\n", (int) this->hideUserlandThreads);
+   fprintf(fd, "show_only_kernel_threads=%d\n", (int) this->showOnlyKernelThreads);
    fprintf(fd, "shadow_other_users=%d\n", (int) this->shadowOtherUsers);
    fprintf(fd, "show_thread_names=%d\n", (int) this->showThreadNames);
    fprintf(fd, "show_program_path=%d\n", (int) this->showProgramPath);
@@ -330,6 +334,7 @@ Settings* Settings_new(int cpuCount) {
    this->showThreadNames = false;
    this->hideKernelThreads = false;
    this->hideUserlandThreads = false;
+   this->showOnlyKernelThreads = false;
    this->treeView = false;
    this->highlightBaseName = false;
    this->highlightMegabytes = false;
