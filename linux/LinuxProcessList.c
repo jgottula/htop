@@ -848,12 +848,6 @@ static bool LinuxProcessList_recurseProcTree(LinuxProcessList* this, const char*
    while ((entry = readdir(dir)) != NULL) {
       char* name = entry->d_name;
 
-      // The RedHat kernel hides threads with a dot.
-      // I believe this is non-standard.
-      if ((!settings->hideThreads) && name[0] == '.') {
-         name++;
-      }
-
       // Just skip all non-number directories.
       if (name[0] < '0' || name[0] > '9') {
          continue;
