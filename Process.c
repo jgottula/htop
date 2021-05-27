@@ -403,7 +403,7 @@ void Process_writeField(Process* this, RichString* str, ProcessField field) {
    }
    case COMM: {
       if (this->settings->highlightThreads && Process_isThread(this)) {
-         attr = CRT_colors[PROCESS_THREAD];
+         attr = CRT_colors[Process_isMainThread(this) ? PROCESS_THREAD_BASENAME : PROCESS_THREAD];
          baseattr = CRT_colors[PROCESS_THREAD_BASENAME];
       }
       if (!this->settings->treeView || this->indent == 0) {
